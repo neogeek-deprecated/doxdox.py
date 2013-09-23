@@ -10,6 +10,8 @@ sudo pip install https://github.com/neogeek/doxdox/zipball/master
 
 ##Usage
 
+Run the following command in the same directory as your dox files.
+
 ```bash
 doxdox.py -t "Title of project" -d "Short description of project." > docs.html
 ```
