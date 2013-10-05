@@ -12,6 +12,7 @@ setup(
     scripts=['doxdox/doxdox.py'],
     install_requires=[
         'Jinja2==2.7.1',
-        'Pygments==1.6'
+        'Pygments==1.6',
+        'sh==1.09'
     ]
 )

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
-import sys, os, getopt, subprocess, re, json
+import argparse, os, re, json
+
+from sh import find
 
 from jinja2 import Template
 
@@ -8,9 +10,18 @@ from pygments import highlight
 from pygments.lexers import CheetahJavascriptLexer
 from pygments.formatters import HtmlFormatter
 
-optlist, args = getopt.getopt(sys.argv[1:], 't:d:')
+parser = argparse.ArgumentParser(description='HTML generator for Dox Documentation')
 
-bootstrap_template='''
+parser.add_argument('dir', nargs='?', default='.', help='Directory to search for .json files in.')
+parser.add_argument('-t', '--title', type=str, default='Untitled Project', help='The project title. Default is "Untitled Project".')
+parser.add_argument('-d', '--description', type=str, default='', help='The project description. Default is blank.')
+parser.add_argument('-l', '--layout', type=str, choices=['bootstrap'], default='bootstrap', help='The template to render the documentation with. Default is bootstrap.')
+
+args = parser.parse_args()
+
+templates = {}
+
+templates['bootstrap'] = '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -71,41 +82,34 @@ bootstrap_template='''
 
         <div class="page-header">
             <div class="pull-right">
-            <label><input type="checkbox" name="toggle-code" class="toggle-code-blocks" /> Toggle Code Blocks</label><br />
-            <label><input type="checkbox" name="toggle-private" class="toggle-private" /> Toggle Private Methods/Function</label>
+                <label><input type="checkbox" name="toggle-code" class="toggle-code-blocks" /> Toggle Code Blocks</label><br />
+                <label><input type="checkbox" name="toggle-private" class="toggle-private" /> Toggle Private Methods/Function</label>
             </div>
             <h1>{{title}}{% if description %} <small>{{description}}</small>{% endif %}</h1>
         </div>
 
-        {% if navigation %}
-
         <div class="col-md-3">
 
-            <div class="">
+            <ul class="nav">
 
-                <ul class="nav bs-sidenav">
+            {% for nav in navigation %}
 
-                {% for nav in navigation %}
+            <li class="scope-{{nav.scope}}"><a href="#{{nav.uid}}">{{nav.name}}</a></li>
 
-                <li class="scope-{{nav.scope}}"><a href="#{{nav.uid}}">{{nav.name}}</a></li>
+            {% endfor %}
 
-                {% endfor %}
-
-                </ul>
-
-            </div>
+            </ul>
 
         </div>
 
         <div class="col-md-9">
-
-            {% endif %}
 
             {% for method in methods %}
 
             <div class="method scope-{{method.scope}}">
 
                 <h2 id="{{method.uid}}"><a href="#{{method.uid}}" class="permalink">#</a>{{method.name}} {% if method.scope == "private" %}<span class="label label-default">private</span>{% endif %}</h2>
+
                 {{method.description}}
 
                 {% if method.params %}
@@ -127,13 +131,6 @@ bootstrap_template='''
 
                 {% endif %}
 
-                {% if method.examples %}
-
-                <h3>Examples</h3>
-                {{method.examples}}
-
-                {% endif %}
-
                 {% if method.properties %}
 
                 <h3>Properties</h3>
@@ -147,9 +144,36 @@ bootstrap_template='''
 
                 {% endif %}
 
-                <h3>Returns</h3>
+                {% for key, vars in method.data.iteritems() %}
 
-                <p>{{method.return}}</p>
+                {% if vars %}
+
+                <h3>{{key|capitalize}}</h3>
+
+                {% for var in vars %}
+
+                <p>
+                    <b>{{var.name}}</b>
+                    <code>{{var.type}}</code>
+                    {% if var.optional %}
+                    <span class="label label-default">Optional</span>
+                    {% endif %}
+                </p>
+                <p>{{var.description}}</p>
+
+                {% endfor %}
+
+                {% endif %}
+
+                {% endfor %}
+
+                {% if method.examples %}
+
+                <h3>Examples</h3>
+
+                {{method.examples}}
+
+                {% endif %}
 
                 <div class="code">
 
@@ -158,6 +182,10 @@ bootstrap_template='''
                     {{method.code}}
 
                 </div>
+
+                <h3>Returns</h3>
+
+                <p>{{method.return}}</p>
 
             </div>
 
@@ -238,14 +266,6 @@ def file_get_contents(file):
 
         return content
 
-def file_put_contents(file, content):
-
-    file = open(file, 'w')
-    file.write(content)
-    file.close()
-
-    return content
-
 class doxdox:
 
     navigation = []
@@ -253,25 +273,14 @@ class doxdox:
 
     def __init__(self):
 
-        template = Template(bootstrap_template)
+        template = Template(templates[args.layout])
 
-        files = subprocess.check_output('find . -type f -name "*.json" -exec echo -n {}" " \;', shell=True)
-        files = re.split(' ', files.strip())
+        files = find(args.dir, '-type', 'f', '-name', '*.json').strip().split('\n')
 
         for file in files:
-
             self.generate(file)
 
-        title = 'Untitled Project'
-        description = ''
-
-        for option, value in optlist:
-            if option == '-t' and value:
-                title = value
-            elif option == '-d' and value:
-                description = value
-
-        print template.render(title=title, description=description, navigation=self.navigation, methods=self.methods)
+        print(template.render(title=args.title, description=args.description, navigation=self.navigation, methods=self.methods))
 
     def generate(self, file):
 
@@ -281,67 +290,79 @@ class doxdox:
 
             for item in dox:
 
-                temp = {
-                    'uid': False,
-                    'name': False,
-                    'description': False,
-                    'examples': False,
-                    'code': False,
-                    'params': [],
-                    'properties': [],
-                    'scope': 'public',
-                    'return': False
-                }
+                if 'ignore' in item and item['ignore'] == False and 'ctx' in item:
 
-                if item['ignore'] == False and 'ctx' in item:
-
-                    temp['uid'] = re.sub(r'[^a-z0-9\.]+', '', item['ctx']['string'].lower())
-                    temp['name'] = re.sub(r'\.prototype', '', item['ctx']['string'])
-                    temp['description'] = item['description']['summary']
+                    data = {
+                        'uid': re.sub(r'[^a-z0-9\.]+', '', item['ctx']['string'].lower()),
+                        'name': re.sub(r'\.prototype', '', item['ctx']['string']),
+                        'description': item['description']['summary'],
+                        'examples': False,
+                        'code': False,
+                        'params': [],
+                        'properties': [],
+                        'data': {},
+                        'scope': 'public',
+                        'return': False
+                    }
 
                     if item['description']['body']:
+                        data['examples'] = re.sub(r'<(\/)?(pre|code)>', '', item['description']['body'])
+                        data['examples'] = highlight(data['examples'], CheetahJavascriptLexer(), HtmlFormatter())
 
-                        temp['examples'] = highlight(re.sub(r'<(\/)?(pre|code)>', '', item['description']['body']), CheetahJavascriptLexer(), HtmlFormatter())
-
-                    temp['code'] = re.sub(r'\n\t', '\n', highlight(item['code'], CheetahJavascriptLexer(), HtmlFormatter()))
-
-                    if item['isPrivate'] == True:
-
-                        temp['scope'] = 'private'
+                    if item['code']:
+                        data['code'] = re.sub(r'\n\t', '\n', item['code'])
+                        data['code'] = highlight(data['code'], CheetahJavascriptLexer(), HtmlFormatter())
 
                     if 'tags' in item:
 
                         for tag in item['tags']:
 
-                            if tag['type'] == 'property':
+                            if tag['type'] == 'api':
+                                data['scope'] = tag['visibility'].lower()
 
-                                matches = re.findall(r'\{(.+)\} ([^ ]+) (.+$)', tag['string'])[0]
+                            elif tag['type'] == 'return':
+                                data['return'] = '<code>' + tag['types'][0] + '</code> ' + tag['description'];
 
-                                if (len(matches) == 3):
-
-                                    temp['properties'].append({ 'name': item['ctx']['name'] + '.' + matches[1], 'type': matches[0], 'description': matches[2] })
-
-                            elif tag['type'] == 'param':
+                            else:
 
                                 optional = False
 
-                                tag['types'] = '|'.join(tag['types'])
+                                if 'types' in tag:
+                                    tag['types'] = '|'.join(tag['types'])
+
+                                if 'name' not in tag:
+                                    matches = re.findall(r'\{([^\}]+)\} ([^ ]+) (.+$)', tag['string'])
+                                    tag['name'] = matches[0][1]
+                                    tag['types'] = matches[0][0]
+                                    tag['description'] = matches[0][2]
 
                                 if re.search(r'\?$', tag['types']):
-
                                     optional = True
-
                                     tag['types'] = re.sub(r'\?$', '', tag['types'])
 
-                                temp['params'].append({ 'name': tag['name'], 'type': tag['types'], 'description': tag['description'], 'optional': optional })
+                                temp = {
+                                    'name': tag['name'],
+                                    'type': tag['types'],
+                                    'description': tag['description'],
+                                    'optional': optional
+                                }
 
-                            elif tag['type'] == 'return':
+                                if tag['type'] == 'param':
+                                    data['params'].append(temp)
 
-                                temp['return'] = '<code>' + tag['types'][0] + '</code> ' + tag['description'];
+                                elif tag['type'] == 'property':
+                                    data['properties'].append(temp)
 
-                    self.navigation.append({ 'uid': temp['uid'], 'name': temp['name'], 'scope': temp['scope'] })
+                                else:
 
-                    self.methods.append(temp)
+                                    if tag['type'] not in data['data']:
+                                        data['data'][tag['type']] = []
+
+                                    data['data'][tag['type']].append(temp)
+
+                    self.navigation.append({ 'uid': data['uid'], 'name': data['name'], 'scope': data['scope'].lower() })
+
+                    self.methods.append(data)
 
 if __name__ == "__main__":
 
