@@ -32,3 +32,5 @@ optional arguments:
 ##Examples
 
 - Facade.js Documentation <http://docs.facadejs.com>
+
+![screenshot](http://f.cl.ly/items/2s3Z1u471I2k0U0a143a/doxdox-screenshot.png)
