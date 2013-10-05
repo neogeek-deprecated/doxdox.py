@@ -88,108 +88,112 @@ templates['bootstrap'] = '''
             <h1>{{title}}{% if description %} <small>{{description}}</small>{% endif %}</h1>
         </div>
 
-        <div class="col-md-3">
+        <div class="row">
 
-            <ul class="nav">
+            <div class="col-md-3">
 
-            {% for nav in navigation %}
+                <ul class="nav">
 
-            <li class="scope-{{nav.scope}}"><a href="#{{nav.uid}}">{{nav.name}}</a></li>
+                {% for nav in navigation %}
 
-            {% endfor %}
-
-            </ul>
-
-        </div>
-
-        <div class="col-md-9">
-
-            {% for method in methods %}
-
-            <div class="method scope-{{method.scope}}">
-
-                <h2 id="{{method.uid}}"><a href="#{{method.uid}}" class="permalink">#</a>{{method.name}} {% if method.scope == "private" %}<span class="label label-default">private</span>{% endif %}</h2>
-
-                {{method.description}}
-
-                {% if method.params %}
-
-                <h3>Parameters</h3>
-
-                {% for param in method.params %}
-
-                <p>
-                    <b>{{param.name}}</b>
-                    <code>{{param.type}}</code>
-                    {% if param.optional %}
-                    <span class="label label-default">Optional</span>
-                    {% endif %}
-                </p>
-                <p>{{param.description}}</p>
+                <li class="scope-{{nav.scope}}"><a href="#{{nav.uid}}">{{nav.name}}</a></li>
 
                 {% endfor %}
 
-                {% endif %}
-
-                {% if method.properties %}
-
-                <h3>Properties</h3>
-
-                {% for property in method.properties %}
-
-                <p><b>{{property.name}}</b> <code>{{property.type}}</code></p>
-                <p>{{property.description}}</p>
-
-                {% endfor %}
-
-                {% endif %}
-
-                {% for key, vars in method.data.iteritems() %}
-
-                {% if vars %}
-
-                <h3>{{key|capitalize}}</h3>
-
-                {% for var in vars %}
-
-                <p>
-                    <b>{{var.name}}</b>
-                    <code>{{var.type}}</code>
-                    {% if var.optional %}
-                    <span class="label label-default">Optional</span>
-                    {% endif %}
-                </p>
-                <p>{{var.description}}</p>
-
-                {% endfor %}
-
-                {% endif %}
-
-                {% endfor %}
-
-                {% if method.examples %}
-
-                <h3>Examples</h3>
-
-                {{method.examples}}
-
-                {% endif %}
-
-                <div class="code">
-
-                    <h3>Code</h3>
-
-                    {{method.code}}
-
-                </div>
-
-                <h3>Returns</h3>
-
-                <p>{{method.return}}</p>
+                </ul>
 
             </div>
 
-            {% endfor %}
+            <div class="col-md-9">
+
+                {% for method in methods %}
+
+                <div class="method scope-{{method.scope}}">
+
+                    <h2 id="{{method.uid}}"><a href="#{{method.uid}}" class="permalink">#</a>{{method.name}} {% if method.scope == "private" %}<span class="label label-default">private</span>{% endif %}</h2>
+
+                    {{method.description}}
+
+                    {% if method.params %}
+
+                    <h3>Parameters</h3>
+
+                    {% for param in method.params %}
+
+                    <p>
+                        <b>{{param.name}}</b>
+                        <code>{{param.type}}</code>
+                        {% if param.optional %}
+                        <span class="label label-default">Optional</span>
+                        {% endif %}
+                    </p>
+                    <p>{{param.description}}</p>
+
+                    {% endfor %}
+
+                    {% endif %}
+
+                    {% if method.properties %}
+
+                    <h3>Properties</h3>
+
+                    {% for property in method.properties %}
+
+                    <p><b>{{property.name}}</b> <code>{{property.type}}</code></p>
+                    <p>{{property.description}}</p>
+
+                    {% endfor %}
+
+                    {% endif %}
+
+                    {% for key, vars in method.data.iteritems() %}
+
+                    {% if vars %}
+
+                    <h3>{{key|capitalize}}</h3>
+
+                    {% for var in vars %}
+
+                    <p>
+                        <b>{{var.name}}</b>
+                        <code>{{var.type}}</code>
+                        {% if var.optional %}
+                        <span class="label label-default">Optional</span>
+                        {% endif %}
+                    </p>
+                    <p>{{var.description}}</p>
+
+                    {% endfor %}
+
+                    {% endif %}
+
+                    {% endfor %}
+
+                    {% if method.examples %}
+
+                    <h3>Examples</h3>
+
+                    {{method.examples}}
+
+                    {% endif %}
+
+                    <div class="code">
+
+                        <h3>Code</h3>
+
+                        {{method.code}}
+
+                    </div>
+
+                    <h3>Returns</h3>
+
+                    <p>{{method.return}}</p>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
 
         </div>
 
