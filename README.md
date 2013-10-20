@@ -5,7 +5,7 @@ A simple documentation generator that takes output from [dox](https://github.com
 ##Installation
 
 ```bash
-sudo pip install https://github.com/neogeek/doxdox/zipball/master
+sudo pip install https://github.com/neogeek/doxdox/zipball/master --upgrade
 ```
 
 ##Usage
