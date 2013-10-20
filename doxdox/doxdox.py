@@ -284,7 +284,11 @@ class doxdox:
         for file in files:
             self.generate(file)
 
-        print(template.render(title=args.title, description=args.description, navigation=self.navigation, methods=self.methods))
+        if len(self.methods):
+            print(template.render(title=args.title, description=args.description, navigation=self.navigation, methods=self.methods))
+
+        else:
+            parser.print_help()
 
     def generate(self, file):
 
