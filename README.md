@@ -1,5 +1,7 @@
 #doxdox
 
+![version](https://pypip.in/v/doxdox/badge.png) ![downloads](https://pypip.in/d/doxdox/badge.png)
+
 A simple documentation generator that takes output from [dox](https://github.com/visionmedia/dox/) and builds a [Bootstrap](http://getbootstrap.com/) based documentation file.
 
 ##Installation
