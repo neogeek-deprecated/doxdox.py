@@ -7,7 +7,7 @@ A simple documentation generator that takes output from [dox](https://github.com
 ##Installation
 
 ```bash
-pip install --pre doxdox
+$ pip install --pre doxdox
 ```
 
 ##Usage
