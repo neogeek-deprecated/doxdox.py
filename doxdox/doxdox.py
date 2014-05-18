@@ -223,7 +223,7 @@ templates['bootstrap'] = '''
 
 </footer>
 
-{% if header_inc %}
+{% if footer_inc %}
 
 {{footer_inc}}
 
