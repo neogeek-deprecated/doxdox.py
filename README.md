@@ -13,9 +13,11 @@ $ pip install --pre doxdox
 ##Usage
 
 ```bash
-usage: doxdox.py [-h] [-t TITLE] [-d DESCRIPTION] [-l {bootstrap}] [dir]
+usage: doxdox.py [-h] [-t TITLE] [-d DESCRIPTION] [-l {bootstrap}]
+                 [--header HEADER] [--footer FOOTER]
+                 [dir]
 
-HTML generator for Dox Documentation
+HTML generator for Dox Documentation (0.3alpha)
 
 positional arguments:
   dir                   Directory to search for .json files in.
@@ -29,6 +31,8 @@ optional arguments:
   -l {bootstrap}, --layout {bootstrap}
                         The template to render the documentation with. Default
                         is bootstrap.
+  --header HEADER       HTML include file (positioned above the content).
+  --footer FOOTER       HTML include file (positioned below the content).
 ```
 
 ##Examples
