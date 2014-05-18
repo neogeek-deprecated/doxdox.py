@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import pkg_resources
+
 import argparse, os, re, json
 
 from sh import find
@@ -10,12 +12,16 @@ from pygments import highlight
 from pygments.lexers import CheetahJavascriptLexer
 from pygments.formatters import HtmlFormatter
 
-parser = argparse.ArgumentParser(description='HTML generator for Dox Documentation')
+version = pkg_resources.require('doxdox')[0].version
+
+parser = argparse.ArgumentParser(description='HTML generator for Dox Documentation ({})'.format(version))
 
 parser.add_argument('dir', nargs='?', default='.', help='Directory to search for .json files in.')
 parser.add_argument('-t', '--title', type=str, default='Untitled Project', help='The project title. Default is "Untitled Project".')
 parser.add_argument('-d', '--description', type=str, default='', help='The project description. Default is blank.')
 parser.add_argument('-l', '--layout', type=str, choices=['bootstrap'], default='bootstrap', help='The template to render the documentation with. Default is bootstrap.')
+parser.add_argument('--header', type=str, default='', help='HTML include file (positioned above the content).')
+parser.add_argument('--footer', type=str, default='', help='HTML include file (positioned below the content).')
 
 args = parser.parse_args()
 
@@ -27,7 +33,7 @@ templates['bootstrap'] = '''
 <head>
 <meta charset="utf-8" />
 <title>{{title}}{% if description %} - {{description}}{% endif %}</title>
-<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.0/css/bootstrap.min.css" />
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
 <style>
 
 .hll{background-color:#ffc}.c{color:#998;font-style:italic}.err{color:#a61717;background-color:#e3d2d2}.k{color:#000;font-weight:700}.o{color:#000;font-weight:700}.cm{color:#998;font-style:italic}.cp{color:#999;font-weight:700;font-style:italic}.c1{color:#998;font-style:italic}.cs{color:#999;font-weight:700;font-style:italic}.gd{color:#000;background-color:#fdd}.ge{color:#000;font-style:italic}.gr{color:#a00}.gh{color:#999}.gi{color:#000;background-color:#dfd}.go{color:#888}.gp{color:#555}.gs{font-weight:700}.gu{color:#aaa}.gt{color:#a00}.kc{color:#000;font-weight:700}.kd{color:#000;font-weight:700}.kn{color:#000;font-weight:700}.kp{color:#000;font-weight:700}.kr{color:#000;font-weight:700}.kt{color:#458;font-weight:700}.m{color:#099}.s{color:#d01040}.na{color:teal}.nb{color:#0086B3}.nc{color:#458;font-weight:700}.no{color:teal}.nd{color:#3c5d5d;font-weight:700}.ni{color:purple}.ne{color:#900;font-weight:700}.nf{color:#900;font-weight:700}.nl{color:#900;font-weight:700}.nn{color:#555}.nt{color:navy}.nv{color:teal}.ow{color:#000;font-weight:700}.w{color:#bbb}.mf{color:#099}.mh{color:#099}.mi{color:#099}.mo{color:#099}.sb{color:#d01040}.sc{color:#d01040}.sd{color:#d01040}.s2{color:#d01040}.se{color:#d01040}.sh{color:#d01040}.si{color:#d01040}.sx{color:#d01040}.sr{color:#009926}.s1{color:#d01040}.ss{color:#990073}.bp{color:#999}.vc{color:teal}.vg{color:teal}.vi{color:teal}.il{color:#099}
@@ -75,6 +81,8 @@ templates['bootstrap'] = '''
 </head>
 
 <body>
+
+{{header_inc}}
 
 <div class="wrap">
 
@@ -211,7 +219,9 @@ templates['bootstrap'] = '''
 
 </footer>
 
-<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+{{footer_inc}}
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
 
 (function () {
@@ -285,7 +295,14 @@ class doxdox:
             self.generate(file)
 
         if len(self.methods):
-            print(template.render(title=args.title, description=args.description, navigation=self.navigation, methods=self.methods))
+            print(template.render(
+                title=args.title,
+                description=args.description,
+                navigation=self.navigation,
+                methods=self.methods,
+                header_inc=file_get_contents(args.header),
+                footer_inc=file_get_contents(args.footer)
+            ))
 
         else:
             parser.print_help()

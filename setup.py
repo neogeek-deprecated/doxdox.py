@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='doxdox',
-    version='0.2alpha',
+    version='0.3alpha',
     description='A simple documentation generator that takes output from dox and builds a Bootstrap based documentation file.',
     author='Scott Doxey',
     url='https://github.com/neogeek/doxdox',
