@@ -82,7 +82,11 @@ templates['bootstrap'] = '''
 
 <body>
 
+{% if header_inc %}
+
 {{header_inc}}
+
+{% endif %}
 
 <div class="wrap">
 
@@ -219,7 +223,11 @@ templates['bootstrap'] = '''
 
 </footer>
 
+{% if header_inc %}
+
 {{footer_inc}}
+
+{% endif %}
 
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
