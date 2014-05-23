@@ -17,7 +17,7 @@ usage: doxdox.py [-h] [-t TITLE] [-d DESCRIPTION] [-l {bootstrap}]
                  [--header HEADER] [--footer FOOTER]
                  [dir]
 
-HTML generator for Dox Documentation (0.3alpha)
+HTML generator for Dox Documentation (0.3.1alpha)
 
 positional arguments:
   dir                   Directory to search for .json files in.
