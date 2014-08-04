@@ -1,6 +1,6 @@
 #doxdox
 
-[![version](https://pypip.in/v/doxdox/badge.png)](https://pypi.python.org/pypi/doxdox/) [![downloads](https://pypip.in/d/doxdox/badge.png)](https://pypi.python.org/pypi/doxdox/)
+[![version](https://pypip.in/v/doxdox/badge.svg)](https://pypi.python.org/pypi/doxdox/) [![downloads](https://pypip.in/d/doxdox/badge.svg)](https://pypi.python.org/pypi/doxdox/)
 
 A simple documentation generator that takes output from [dox](https://github.com/visionmedia/dox/) and builds a [Bootstrap](http://getbootstrap.com/) based documentation file.
 
